@@ -180,7 +180,7 @@ application_create_new_package() {
 # Upload file
 application_upload_artifact() {
     echo "upload artifact starts" >&2
-    dateNow=$(date -u +"%a, %d %b %Y %H:%M:%S GMT")
+    dateNow=$(date -Ru | sed 's/\+0000/GMT/')
     azcliVersion="2018-03-28"
     if [ $verbose == 0 ]; then
         echo curl --fail -X PUT -H "Content-Type: application/octet-stream" \
