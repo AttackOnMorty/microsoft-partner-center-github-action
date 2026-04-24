@@ -270,22 +270,18 @@ application_get_package_draft_config() {
     dataEtag=$(echo $packageConfiguration | jq -r '.value[0] | .["@odata.etag"]')
 }
 
-# Change update package reference
+# Change update package reference.
+# NOTE: resourceType must match the server-assigned value on the draft
+# (e.g. AzureApplicationPackageConfiguration vs AzureSolutionTemplate...).
+# Hardcoding a single value caused a 400 for products whose draft
+# returned a different resourceType. Patch only version and
+# packageReferences on the draft JSON fetched in
+# application_get_package_draft_config.
 application_generateUpdatePackageReferenceRequestBody()
 {
-    cat <<EOF
-{
-    "resourceType": "AzureSolutionTemplatePackageConfiguration",
-    "version": "${artifactVersion}",
-    "packageReferences": [
-        {
-            "type": "AzureApplicationPackage",
-            "value": "${packageId}"
-        }
-    ],
-    "id": "${configurationId}"
-}
-EOF
+    echo "$configuration" | jq --arg v "$artifactVersion" --arg pkg "$packageId" \
+        '.version = $v
+         | .packageReferences = [{"type": "AzureApplicationPackage", "value": $pkg}]'
 }
 
 # Update package reference
